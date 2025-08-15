@@ -1,0 +1,24 @@
+services:
+  xaueur:
+    build: ./xaueur-wires
+    image: xaueur-wires:prod
+    restart: unless-stopped
+    env_file:
+      - ./xaueur-wires/.env
+    healthcheck:
+      test: ["CMD-SHELL", "node -e 'process.exit(0)'"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+
+  xauusd:
+    build: ./xauusd-wires-discord
+    image: xauusd-wires:prod
+    restart: unless-stopped
+    env_file:
+      - /.env
+    healthcheck:
+      test: ["CMD-SHELL", "node -e 'process.exit(0)'"]
+      interval: 1m
+      timeout: 10s
+      retries: 3

@@ -1,0 +1,18 @@
+# node junk
+node_modules
+npm-debug.log*
+yarn.lock
+pnpm-lock.yaml
+
+# vcs
+.git
+.gitignore
+
+# env & local files
+.env
+.env.*
+.DS_Store
+
+# editor
+.vscode
+.idea
