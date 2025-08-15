@@ -27,25 +27,27 @@ async function runOnce() {
 
   const aggregated = [`⚡ XAUUSD Wires — ${ts}`, ...parts].join("\n");
 
-  // AI parsing/decision: single-pass or multi-agent depending on env flag
-  const useAgents = /^true$/i.test(process.env.AGENTS_MODE || "");
-  if (useAgents) {
+  const model = process.env.OPENROUTER_MODEL;
+
+  const summarizerPromise = (async () => {
     try {
-      const model = process.env.OPENROUTER_MODEL;
+      return await analyzeScrapedText(aggregated);
+    } catch (e) {
+      return `${aggregated}\n\n(AI error: ${e.message})`;
+    }
+  })();
+
+  const multiAgentPromise = (async () => {
+    try {
       const { combined } = await runAgentsWorkflow({ aggregatedText: aggregated, model });
-      await notify(combined);
+      return combined;
     } catch (e) {
-      await notify(`${aggregated}\n\n(Agents error: ${e.message})`);
+      return `${aggregated}\n\n(Agents error: ${e.message})`;
     }
-  } else {
-    let aiOutput;
-    try {
-      aiOutput = await analyzeScrapedText(aggregated);
-    } catch (e) {
-      aiOutput = `${aggregated}\n\n(AI error: ${e.message})`;
-    }
-    await notify(aiOutput);
-  }
+  })();
+
+  const [summaryOut, agentsOut] = await Promise.all([summarizerPromise, multiAgentPromise]);
+  await Promise.all([notify(summaryOut), notify(agentsOut)]);
 }
 
 const once = process.argv.includes("--once");
